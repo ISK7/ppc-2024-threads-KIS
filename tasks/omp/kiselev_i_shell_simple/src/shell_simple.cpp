@@ -1,8 +1,9 @@
 // Copyright 2024 Kiselev Igor
 #include "omp/kiselev_i_shell_simple/include/shell_simple.hpp"
 
-#include <thread>
 #include <omp.h>
+
+#include <thread>
 
 using namespace std::chrono_literals;
 
