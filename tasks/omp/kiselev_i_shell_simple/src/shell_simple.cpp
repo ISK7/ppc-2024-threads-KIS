@@ -98,7 +98,7 @@ bool Kiselev_omp::KiselevTaskOMP::post_processing() {
     return false;
   }
 }
-// Можно улучшить
+// Can do better
 void Kiselev_omp::KiselevTaskOMP::MergeBlocks(std::vector<int> pData, int Index1, int BlockSize1, int Index2, int BlockSize2) {
   int *pTempArray = new int[BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
