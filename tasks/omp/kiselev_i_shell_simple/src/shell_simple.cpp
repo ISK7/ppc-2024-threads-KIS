@@ -99,7 +99,8 @@ bool Kiselev_omp::KiselevTaskOMP::post_processing() {
   }
 }
 // Can do better
-void Kiselev_omp::KiselevTaskOMP::MergeBlocks(std::vector<int> pData, int Index1, int BlockSize1, int Index2, int BlockSize2) {
+void Kiselev_omp::KiselevTaskOMP::MergeBlocks(std::vector<int> pData, int Index1, int BlockSize1, int Index2,
+                                              int BlockSize2) {
   int *pTempArray = new int[BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
   while ((i1 < Index1 + BlockSize1) && (i2 < Index2 + BlockSize2)) {
@@ -195,7 +196,8 @@ void Kiselev_omp::KiselevTaskOMP::SeqSorter(std::vector<int>, int start, int end
   }
 }
 
-void Kiselev_omp::KiselevTaskOMP::CompareSplitBlocks(std::vector<int> &arr, int start1, int size1, int start2, int size2) {
+void Kiselev_omp::KiselevTaskOMP::CompareSplitBlocks(std::vector<int> &arr, int start1, int size1, int start2,
+                                                     int size2) {
   std::vector<int> temp(size1 + size2);
   int i = start1, j = start2, k = 0;
   while (i < start1 + size1 && j < start2 + size2) {
