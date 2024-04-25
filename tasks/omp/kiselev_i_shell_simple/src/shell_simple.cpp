@@ -4,8 +4,10 @@
 #include <omp.h>
 
 #include <thread>
+#include <cmath>
 
 using namespace std::chrono_literals;
+using namespace std;
 
 bool Kiselev_omp::KiselevTaskOMP::pre_processing() {
   try {
