@@ -3,11 +3,12 @@
 
 #include <omp.h>
 
-#include <thread>
 #include <cmath>
 #include <memory>
+#include <thread>
 
 using namespace std::chrono_literals;
+using namespace std;
 
 bool Kiselev_omp::KiselevTaskOMP::pre_processing() {
   try {
