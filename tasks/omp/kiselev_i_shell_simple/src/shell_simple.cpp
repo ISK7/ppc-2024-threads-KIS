@@ -3,7 +3,6 @@
 
 #include <omp.h>
 
-#include <cmath>
 #include <memory>
 #include <thread>
 
@@ -135,7 +134,12 @@ void Kiselev_omp::KiselevTaskOMP::FindThreadVariables() {
 #pragma omp single
     ThreadNum = omp_get_num_threads();
   }
-  DimSize = int(log10(double(ThreadNum)) / log10(2.0)) + 1;
+  int helper = 1;
+  DimSize = 1;
+  while (ThreadNum >= helper) {
+    DimSize++;
+    helper <<= helper;
+  }
 }
 
 int Kiselev_omp::KiselevTaskOMP::GrayCode(int RingID, int DimSize) {
