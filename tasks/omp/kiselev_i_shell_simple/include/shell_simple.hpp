@@ -8,6 +8,8 @@
 
 #include "core/task/include/task.hpp"
 
+using namespace std;
+
 namespace Kiselev_omp {
 class KiselevTaskOMP : public ppc::core::Task {
  public:

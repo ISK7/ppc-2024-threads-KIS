@@ -5,9 +5,9 @@
 
 #include <thread>
 #include <cmath>
+#include <memory>
 
 using namespace std::chrono_literals;
-using namespace std;
 
 bool Kiselev_omp::KiselevTaskOMP::pre_processing() {
   try {
