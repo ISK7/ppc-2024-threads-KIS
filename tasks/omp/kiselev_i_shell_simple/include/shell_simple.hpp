@@ -7,9 +7,10 @@
 
 #include "core/task/include/task.hpp"
 
+namespace Kiselev_omp {
+
 using namespace std;
 
-namespace Kiselev_omp {
 class KiselevTaskOMP : public ppc::core::Task {
  public:
   explicit KiselevTaskOMP(std::shared_ptr<ppc::core::TaskData> taskData_) : Task(std::move(taskData_)) {}
