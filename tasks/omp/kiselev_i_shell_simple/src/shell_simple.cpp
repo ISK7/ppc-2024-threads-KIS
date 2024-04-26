@@ -7,13 +7,12 @@
 #include <thread>
 
 using namespace std::chrono_literals;
-using namespace std;
 
 bool Kiselev_omp::KiselevTaskOMP::pre_processing() {
   try {
     internal_order_test();
     size_t n = taskData->inputs_count[0];
-    arr = std::vector<int>(n, 0);
+    arr = ::std::vector<int>(n, 0);
     for (size_t i = 0; i < n; ++i) {
       int *elem = reinterpret_cast<int *>(taskData->inputs[0] + i * sizeof(int));
       arr[i] = *elem;
@@ -102,7 +101,7 @@ bool Kiselev_omp::KiselevTaskOMP::post_processing() {
   }
 }
 // Can do better
-void Kiselev_omp::KiselevTaskOMP::MergeBlocks(std::vector<int> pData, int Index1, int BlockSize1, int Index2,
+void Kiselev_omp::KiselevTaskOMP::MergeBlocks(::std::vector<int> pData, int Index1, int BlockSize1, int Index2,
                                               int BlockSize2) {
   int *pTempArray = new int[BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
@@ -119,7 +118,7 @@ void Kiselev_omp::KiselevTaskOMP::MergeBlocks(std::vector<int> pData, int Index1
   }
 }
 
-bool Kiselev_omp::KiselevTaskOMP::IsSorted(std::vector<int> arr) {
+bool Kiselev_omp::KiselevTaskOMP::IsSorted(::std::vector<int> arr) {
   int n = arr.size();
   for (int i = 1; i < n; i++) {
     if (arr[i - 1] > arr[i]) return false;
@@ -192,7 +191,7 @@ int Kiselev_omp::KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Ite
   return result;
 }
 
-void Kiselev_omp::KiselevTaskOMP::SeqSorter(std::vector<int>, int start, int end) {
+void Kiselev_omp::KiselevTaskOMP::SeqSorter(::std::vector<int>, int start, int end) {
   int n = end - start;
   for (int gap = n / 2; gap > 0; gap /= 2) {
     for (int i = gap; i < n; i += 1) {
@@ -204,9 +203,9 @@ void Kiselev_omp::KiselevTaskOMP::SeqSorter(std::vector<int>, int start, int end
   }
 }
 
-void Kiselev_omp::KiselevTaskOMP::CompareSplitBlocks(std::vector<int> &arr, int start1, int size1, int start2,
+void Kiselev_omp::KiselevTaskOMP::CompareSplitBlocks(::std::vector<int> &arr, int start1, int size1, int start2,
                                                      int size2) {
-  std::vector<int> temp(size1 + size2);
+  ::std::vector<int> temp(size1 + size2);
   int i = start1, j = start2, k = 0;
   while (i < start1 + size1 && j < start2 + size2) {
     if (arr[i] <= arr[j]) {
