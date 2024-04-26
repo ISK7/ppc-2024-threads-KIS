@@ -8,7 +8,9 @@
 
 using namespace std::chrono_literals;
 
-bool Kiselev_omp::KiselevTaskOMP::pre_processing() {
+namespace Kiselev_omp {
+
+bool KiselevTaskOMP::pre_processing() {
   try {
     internal_order_test();
     size_t n = taskData->inputs_count[0];
@@ -23,7 +25,7 @@ bool Kiselev_omp::KiselevTaskOMP::pre_processing() {
   return true;
 }
 
-bool Kiselev_omp::KiselevTaskOMP::validation() {
+bool KiselevTaskOMP::validation() {
   try {
     internal_order_test();
     return taskData->inputs_count[0] != 0 && taskData->inputs_count[0] == taskData->outputs_count[0];
@@ -32,7 +34,7 @@ bool Kiselev_omp::KiselevTaskOMP::validation() {
   }
 }
 
-bool Kiselev_omp::KiselevTaskOMP::run() {
+bool KiselevTaskOMP::run() {
   try {
     internal_order_test();
     int n = arr.size();
@@ -86,7 +88,7 @@ bool Kiselev_omp::KiselevTaskOMP::run() {
   }
 }
 
-bool Kiselev_omp::KiselevTaskOMP::post_processing() {
+bool KiselevTaskOMP::post_processing() {
   try {
     internal_order_test();
     size_t n = arr.size();
@@ -101,7 +103,7 @@ bool Kiselev_omp::KiselevTaskOMP::post_processing() {
   }
 }
 // Can do better
-void Kiselev_omp::KiselevTaskOMP::MergeBlocks(::std::vector<int> pData, int Index1, int BlockSize1, int Index2,
+void KiselevTaskOMP::MergeBlocks(::std::vector<int> pData, int Index1, int BlockSize1, int Index2,
                                               int BlockSize2) {
   int *pTempArray = new int[BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
@@ -118,7 +120,7 @@ void Kiselev_omp::KiselevTaskOMP::MergeBlocks(::std::vector<int> pData, int Inde
   }
 }
 
-bool Kiselev_omp::KiselevTaskOMP::IsSorted(::std::vector<int> arr) {
+bool KiselevTaskOMP::IsSorted(::std::vector<int> arr) {
   int n = arr.size();
   for (int i = 1; i < n; i++) {
     if (arr[i - 1] > arr[i]) return false;
@@ -126,7 +128,7 @@ bool Kiselev_omp::KiselevTaskOMP::IsSorted(::std::vector<int> arr) {
   return true;
 }
 
-void Kiselev_omp::KiselevTaskOMP::FindThreadVariables() {
+void KiselevTaskOMP::FindThreadVariables() {
 #pragma omp parallel
   {
     ThreadID = omp_get_thread_num();
@@ -141,7 +143,7 @@ void Kiselev_omp::KiselevTaskOMP::FindThreadVariables() {
   }
 }
 
-int Kiselev_omp::KiselevTaskOMP::GrayCode(int RingID, int DimSize) {
+int KiselevTaskOMP::GrayCode(int RingID, int DimSize) {
   if ((RingID == 0) && (DimSize == 1)) return 0;
   if ((RingID == 1) && (DimSize == 1)) return 1;
   int res;
@@ -152,13 +154,13 @@ int Kiselev_omp::KiselevTaskOMP::GrayCode(int RingID, int DimSize) {
   return res;
 }
 
-int Kiselev_omp::KiselevTaskOMP::ReverseGrayCode(int CubeID, int DimSize) {
+int KiselevTaskOMP::ReverseGrayCode(int CubeID, int DimSize) {
   for (int i = 0; i < (1 << DimSize); i++) {
     if (CubeID == GrayCode(i, DimSize)) return i;
   }
 }
 
-void Kiselev_omp::KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
+void KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
   int PairNum = 0, FirstValue, SecondValue;
   bool Exist;
   for (int i = 0; i < 2 * ThreadNum; i++) {
@@ -175,7 +177,7 @@ void Kiselev_omp::KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
   }
 }
 
-int Kiselev_omp::KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Iter) {
+int KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Iter) {
   int BlockID = 0, index, result;
   for (int i = 0; i < ThreadNum; i++) {
     BlockID = BlockPairs[2 * i];
@@ -191,7 +193,7 @@ int Kiselev_omp::KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Ite
   return result;
 }
 
-void Kiselev_omp::KiselevTaskOMP::SeqSorter(::std::vector<int>, int start, int end) {
+void KiselevTaskOMP::SeqSorter(::std::vector<int>, int start, int end) {
   int n = end - start;
   for (int gap = n / 2; gap > 0; gap /= 2) {
     for (int i = gap; i < n; i += 1) {
@@ -203,7 +205,7 @@ void Kiselev_omp::KiselevTaskOMP::SeqSorter(::std::vector<int>, int start, int e
   }
 }
 
-void Kiselev_omp::KiselevTaskOMP::CompareSplitBlocks(::std::vector<int> &arr, int start1, int size1, int start2,
+void KiselevTaskOMP::CompareSplitBlocks(::std::vector<int> &arr, int start1, int size1, int start2,
                                                      int size2) {
   ::std::vector<int> temp(size1 + size2);
   int i = start1, j = start2, k = 0;
@@ -224,3 +226,4 @@ void Kiselev_omp::KiselevTaskOMP::CompareSplitBlocks(::std::vector<int> &arr, in
     arr[start1 + m] = temp[m];
   }
 }
+};  // namespace Kiselev_omp
