@@ -31,5 +31,5 @@ class KiselevTaskOMP : public ppc::core::Task {
   void SeqSorter(std::vector<int>, int start, int end);
   void CompareSplitBlocks(std::vector<int>& arr, int start1, int size1, int start2, int size2);
 };
-}  // namespace Kiselev_seq
+}  // namespace Kiselev_omp
 #endif  // SHELL_SIMPLE_HPP_INCLUDED
