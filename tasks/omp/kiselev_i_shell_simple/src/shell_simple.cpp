@@ -225,4 +225,4 @@ void KiselevTaskOMP::CompareSplitBlocks(::std::vector<int> &arr, int start1, int
   for (int m = 0; m < size1 + size2; m++) {
     arr[start1 + m] = temp[m];
   }
-};
+}
