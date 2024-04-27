@@ -4,7 +4,6 @@
 #include <omp.h>
 
 #include <memory>
-#include <thread>
 
 using namespace std::chrono_literals;
 
