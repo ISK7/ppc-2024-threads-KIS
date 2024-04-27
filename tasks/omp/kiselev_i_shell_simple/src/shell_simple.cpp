@@ -37,7 +37,7 @@ bool KiselevTaskOMP::validation() {
 bool KiselevTaskOMP::run() {
   try {
     internal_order_test();
-    int n = arr.size();
+    int n = (int)arr.size();
     FindThreadVariables();
     int *Index = new int[2 * ThreadNum];
     int *BlockSize = new int[2 * ThreadNum];
@@ -63,7 +63,7 @@ bool KiselevTaskOMP::run() {
         int MyPairNum = FindPair(BlockPairs, ThreadID, Iter);
         int FirstBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum], DimSize);
         int SecondBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum + 1], DimSize);
-        CompareSplitBlocks(arr, Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
+        CompareSplitBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
       }
     }
     int Iter = 1;
@@ -143,20 +143,20 @@ void KiselevTaskOMP::FindThreadVariables() {
   }
 }
 
-int KiselevTaskOMP::GrayCode(int RingID, int DimSize) {
-  if ((RingID == 0) && (DimSize == 1)) return 0;
-  if ((RingID == 1) && (DimSize == 1)) return 1;
+int KiselevTaskOMP::GrayCode(int RingID, int _DimSize) {
+  if ((RingID == 0) && (_DimSize == 1)) return 0;
+  if ((RingID == 1) && (_DimSize == 1)) return 1;
   int res;
-  if (RingID < (1 << (DimSize - 1)))
-    res = GrayCode(RingID, DimSize - 1);
+  if (RingID < (1 << (_DimSize - 1)))
+    res = GrayCode(RingID, _DimSize - 1);
   else
-    res = (1 << (DimSize - 1)) + GrayCode((1 << DimSize) - 1 - RingID, DimSize - 1);
+    res = (1 << (_DimSize - 1)) + GrayCode((1 << _DimSize) - 1 - RingID, _DimSize - 1);
   return res;
 }
 
-int KiselevTaskOMP::ReverseGrayCode(int CubeID, int DimSize) {
-  for (int i = 0; i < (1 << DimSize); i++) {
-    if (CubeID == GrayCode(i, DimSize)) return i;
+int KiselevTaskOMP::ReverseGrayCode(int CubeID, int _DimSize) {
+  for (int i = 0; i < (1 << _DimSize); i++) {
+    if (CubeID == GrayCode(i, _DimSize)) return i;
   }
   return 0;
 }
@@ -178,7 +178,7 @@ void KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
   }
 }
 
-int KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Iter) {
+int KiselevTaskOMP::FindPair(int *BlockPairs, int _ThreadID, int Iter) {
   int BlockID = 0, index = 0, result = 0;
   for (int i = 0; i < ThreadNum; i++) {
     BlockID = BlockPairs[2 * i];
@@ -186,7 +186,7 @@ int KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Iter) {
     if ((Iter > 0) && (Iter < DimSize - 1))
       index = ((BlockID >> (DimSize - Iter)) << (DimSize - Iter - 1)) | (BlockID % (1 << (DimSize - Iter - 1)));
     if (Iter == DimSize - 1) index = BlockID >> 1;
-    if (index == ThreadID) {
+    if (index == _ThreadID) {
       result = i;
       break;
     }
@@ -206,7 +206,7 @@ void KiselevTaskOMP::SeqSorter(int start, int end) {
   }
 }
 
-void KiselevTaskOMP::CompareSplitBlocks(::std::vector<int> &arr, int start1, int size1, int start2, int size2) {
+void KiselevTaskOMP::CompareSplitBlocks(int start1, int size1, int start2, int size2) {
   ::std::vector<int> temp(size1 + size2);
   int i = start1, j = start2, k = 0;
   while (i < start1 + size1 && j < start2 + size2) {
