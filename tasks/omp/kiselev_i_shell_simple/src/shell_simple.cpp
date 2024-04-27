@@ -76,13 +76,13 @@ bool KiselevTaskOMP::run() {
         else if (ThreadID < ThreadNum - 1)
           MergeBlocks(arr, Index[2 * ThreadID + 1], BlockSize[2 * ThreadID + 1], Index[2 * ThreadID + 2],
                       BlockSize[2 * ThreadID + 2]);
-        Iter++;
       }
-      delete[] Index;
-      delete[] BlockSize;
-      delete[] BlockPairs;
-      return true;
+      Iter++;
     }
+    delete[] Index;
+    delete[] BlockSize;
+    delete[] BlockPairs;
+    return true;
   } catch (...) {
     return false;
   }
