@@ -52,9 +52,9 @@ bool KiselevTaskOMP::run() {
 #pragma omp parallel
     {
       int BlockID = ReverseGrayCode(ThreadNum + ThreadID, DimSize);
-      SeqSorter(arr, Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
+      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
       BlockID = ReverseGrayCode(ThreadID, DimSize);
-      SeqSorter(arr, Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
+      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
     }
     for (int Iter = 0; (Iter < DimSize) && (!IsSorted(arr)); Iter++) {
       SetBlockPairs(BlockPairs, Iter);
@@ -120,10 +120,10 @@ void KiselevTaskOMP::MergeBlocks(::std::vector<int> pData, int Index1, int Block
   }
 }
 
-bool KiselevTaskOMP::IsSorted(::std::vector<int> arr) {
-  int n = arr.size();
+bool KiselevTaskOMP::IsSorted(::std::vector<int> array) {
+  int n = array.size();
   for (int i = 1; i < n; i++) {
-    if (arr[i - 1] > arr[i]) return false;
+    if (array[i - 1] > array[i]) return false;
   }
   return true;
 }
@@ -194,7 +194,7 @@ int KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Iter) {
   return result;
 }
 
-void KiselevTaskOMP::SeqSorter(::std::vector<int>, int start, int end) {
+void KiselevTaskOMP::SeqSorter(int start, int end) {
   int n = end - start;
   for (int gap = n / 2; gap > 0; gap /= 2) {
     for (int i = gap; i < n; i += 1) {

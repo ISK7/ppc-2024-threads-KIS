@@ -28,7 +28,7 @@ class KiselevTaskOMP : public ppc::core::Task {
   void SetBlockPairs(int* BlockPairs, int Iter);
   int FindPair(int* BlockPairs, int ThreadID, int Iter);
   void MergeBlocks(std::vector<int> pData, int Index1, int BlockSize1, int Index2, int BlockSize2);
-  void SeqSorter(std::vector<int>, int start, int end);
+  void SeqSorter(int start, int end);
   void CompareSplitBlocks(std::vector<int>& arr, int start1, int size1, int start2, int size2);
 };
 }  // namespace Kiselev_omp
