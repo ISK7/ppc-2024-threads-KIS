@@ -179,7 +179,7 @@ void KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
 }
 
 int KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Iter) {
-  int BlockID = 0, index, result;
+  int BlockID = 0, index = 0, result = 0;
   for (int i = 0; i < ThreadNum; i++) {
     BlockID = BlockPairs[2 * i];
     if (Iter == 0) index = BlockID % (1 << (DimSize - Iter - 1));
