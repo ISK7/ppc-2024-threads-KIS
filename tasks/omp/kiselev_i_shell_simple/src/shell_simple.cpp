@@ -7,6 +7,7 @@
 #include <thread>
 
 using namespace std::chrono_literals;
+using std::__addressof;
 
 using namespace std;
 using namespace Kiselev_omp;

@@ -9,8 +9,6 @@
 
 namespace Kiselev_omp {
 
-using namespace std;
-
 class KiselevTaskOMP : public ppc::core::Task {
  public:
   explicit KiselevTaskOMP(std::shared_ptr<ppc::core::TaskData> taskData_) : Task(std::move(taskData_)) {}
