@@ -86,6 +86,7 @@ bool KiselevTaskOMP::run() {
   } catch (...) {
     return false;
   }
+  return true;
 }
 
 bool KiselevTaskOMP::post_processing() {
@@ -138,7 +139,7 @@ void KiselevTaskOMP::FindThreadVariables() {
   DimSize = 1;
   while (ThreadNum >= helper) {
     DimSize++;
-    helper <<= helper;
+    helper = helper << 1;
   }
 }
 
@@ -157,6 +158,7 @@ int KiselevTaskOMP::ReverseGrayCode(int CubeID, int DimSize) {
   for (int i = 0; i < (1 << DimSize); i++) {
     if (CubeID == GrayCode(i, DimSize)) return i;
   }
+  return 0;
 }
 
 void KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
@@ -180,7 +182,7 @@ int KiselevTaskOMP::FindPair(int *BlockPairs, int ThreadID, int Iter) {
   int BlockID = 0, index, result;
   for (int i = 0; i < ThreadNum; i++) {
     BlockID = BlockPairs[2 * i];
-    if (Iter == 0) index = BlockID % (1 << DimSize - Iter - 1);
+    if (Iter == 0) index = BlockID % (1 << (DimSize - Iter - 1));
     if ((Iter > 0) && (Iter < DimSize - 1))
       index = ((BlockID >> (DimSize - Iter)) << (DimSize - Iter - 1)) | (BlockID % (1 << (DimSize - Iter - 1)));
     if (Iter == DimSize - 1) index = BlockID >> 1;
@@ -223,4 +225,4 @@ void KiselevTaskOMP::CompareSplitBlocks(::std::vector<int> &arr, int start1, int
   for (int m = 0; m < size1 + size2; m++) {
     arr[start1 + m] = temp[m];
   }
-}
+};
