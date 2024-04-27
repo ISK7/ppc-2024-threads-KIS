@@ -41,7 +41,7 @@ bool KiselevTaskOMP::run() {
     FindThreadVariables();
     int *Index = new int[2 * ThreadNum];
     int *BlockSize = new int[2 * ThreadNum];
-    int *BlockPairs = new int[2 * ThreadNum];
+    int *BlockPairs = new int[4 * ThreadNum + 1];
     for (int i = 0; i < 2 * ThreadNum; i++) {
       Index[i] = int((i * n) / double(2 * ThreadNum));
       if (i < 2 * ThreadNum - 1)
