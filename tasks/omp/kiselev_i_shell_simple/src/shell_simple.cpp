@@ -39,9 +39,10 @@ bool KiselevTaskOMP::run() {
     internal_order_test();
     int n = (int)arr.size();
     FindThreadVariables();
-    int *Index = new int[2 * ThreadNum];
-    int *BlockSize = new int[2 * ThreadNum];
-    int *BlockPairs = new int[4 * ThreadNum + 1];
+    if (ThreadNum == 0) return false;
+    int *Index = new int[(unsigned long)2 * ThreadNum];
+    int *BlockSize = new int[(unsigned long)2 * ThreadNum];
+    int *BlockPairs = new int[(unsigned long)4 * ThreadNum + 1];
     for (int i = 0; i < 2 * ThreadNum; i++) {
       Index[i] = int((i * n) / double(2 * ThreadNum));
       if (i < 2 * ThreadNum - 1)
@@ -128,6 +129,14 @@ bool KiselevTaskOMP::IsSorted() {
   return true;
 }
 
+int KiselevTaskOMP::exp(int arg, int exp) {
+  int res = arg;
+  for (int i = 1; i < exp; i++) {
+    res *= arg;
+  }
+  return res;
+}
+
 void KiselevTaskOMP::FindThreadVariables() {
 #pragma omp parallel
   {
@@ -170,7 +179,7 @@ void KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
     for (int j = 0; (j < PairNum) && (!Exist); j++)
       if (BlockPairs[2 * j + 1] == FirstValue) Exist = true;
     if (!Exist) {
-      SecondValue = FirstValue ^ (1 << (DimSize - Iter - 1));
+      SecondValue = exp(FirstValue, (1 << (DimSize - Iter - 1)));
       BlockPairs[2 * PairNum] = FirstValue;
       BlockPairs[2 * PairNum + 1] = SecondValue;
       PairNum++;

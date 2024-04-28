@@ -22,6 +22,7 @@ class KiselevTaskOMP : public ppc::core::Task {
   std::vector<int> input_;
   int ThreadNum, ThreadID, DimSize;
   bool IsSorted();
+  int exp(int arg, int exp);
   void FindThreadVariables();
   int GrayCode(int RingID, int DimSize);
   int ReverseGrayCode(int CubeID, int DimSize);
