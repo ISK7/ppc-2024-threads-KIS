@@ -39,7 +39,7 @@ bool KiselevTaskOMP::run() {
     internal_order_test();
     int n = (int)arr.size();
     FindThreadVariables();
-    if (ThreadNum == 0) return false;
+    //  if (ThreadNum == 0) return false;
     int *Index = new int[(unsigned long)2 * ThreadNum];
     int *BlockSize = new int[(unsigned long)2 * ThreadNum];
     int *BlockPairs = new int[(unsigned long)4 * ThreadNum + 1];
