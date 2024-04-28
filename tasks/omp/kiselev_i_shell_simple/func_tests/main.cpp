@@ -22,7 +22,7 @@ TEST(kiselev_i_shell_simple_omp, check_8_size) {
   KiselevTaskOMP testTaskSequential(taskDataOMP);
   ASSERT_EQ(testTaskSequential.validation(), true);
   testTaskSequential.pre_processing();
-  testTaskSequential.run();
+  ASSERT_EQ(testTaskSequential.run(), true);
   testTaskSequential.post_processing();
   ASSERT_EQ(expected, res);
 }
