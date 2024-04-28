@@ -109,7 +109,7 @@ void KiselevTaskOMP::MergeBlocks(::std::vector<int> pData, int Index1, int Block
   int *pTempArray = new int[BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
   while ((i1 < Index1 + BlockSize1) || (i2 < Index2 + BlockSize2)) {
-    if ((i1 < Index1 + BlockSize1) && (pData[i1] < pData[i2]) || (i2 >= Index2 + BlockSize2))
+    if (((i1 < Index1 + BlockSize1) && (pData[i1] < pData[i2])) || (i2 >= Index2 + BlockSize2))
       pTempArray[curr++] = pData[i1++];
     else {
       pTempArray[curr++] = pData[i2++];
