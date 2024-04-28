@@ -68,7 +68,7 @@ bool KiselevTaskOMP::run() {
       }
     }
     int Iter = 1;
-    while (!IsSorted()) {
+    while (!IsSorted() && Iter < 2 * DimSize) {
 #pragma omp parallel
       {
         if (Iter % 2 == 0)
