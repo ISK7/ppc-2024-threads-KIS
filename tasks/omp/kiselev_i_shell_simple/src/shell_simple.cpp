@@ -40,35 +40,24 @@ bool KiselevTaskOMP::run() {
     int n = (int)arr.size();
     FindThreadVariables();
     //  if (ThreadNum == 0) return false;
-    int *Index = new int[(unsigned long)2 * ThreadNum];
-    int *BlockSize = new int[(unsigned long)2 * ThreadNum];
-    for (int i = 0; i < 2 * ThreadNum; i++) {
-      Index[i] = int((i * n) / double(2 * ThreadNum));
-      if (i < 2 * ThreadNum - 1)
-        BlockSize[i] = int(n / double(2 * ThreadNum) - 1);
-      else
-        BlockSize[i] = n - Index[i];
+    int *Index = new int[ThreadNum + 1];
+    int *BlockSize = new int[ThreadNum];
+    for (int i = 0; i <= ThreadNum; i++) {
+      Index[i] = (i * n) / ThreadNum;
     }
-#pragma omp parallel
-    {
-      int ThreadID = omp_get_thread_num();
-      int BlockID = ThreadID;
-      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID]);
-      BlockID = ThreadID + ThreadNum;
-      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID]);
+    for (int i = 0; i < ThreadNum; i++) {
+      BlockSize[i] = Index[i + 1] - Index[i];
     }
-
-#pragma omp parallel
-    {
-      int ThreadID = omp_get_thread_num();
-      int FirstBlock = ThreadID;
-      int SecondBlock = ThreadID + ThreadNum;
-      MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
+#pragma omp parallel for
+    for (int i = 0; i < ThreadNum; i++) {
+      SeqSorter(Index[i], Index[i] + BlockSize[i]);
     }
-    for (int i = 0; i < 2 * ThreadNum - 1; i++) {
-      for (int j = i + 1; j < 2 * ThreadNum; j++) {
-        MergeBlocks(Index[i], BlockSize[i], Index[j], BlockSize[j]);
-        if (IsSorted()) break;
+    for (int i = 1; i < ThreadNum; i *= 2) {
+#pragma omp parallel for
+      for (int j = 0; j < ThreadNum; j += 2 * i) {
+        int left = j;
+        int right = std::min(j + i, ThreadNum - 1);
+        MergeBlocks(Index[left], BlockSize[left], Index[right], BlockSize[right]);
       }
     }
     delete[] Index;
@@ -96,19 +85,18 @@ bool KiselevTaskOMP::post_processing() {
 }
 // Can do better
 void KiselevTaskOMP::MergeBlocks(int Index1, int BlockSize1, int Index2, int BlockSize2) {
-  int *pTempArray = new int[(unsigned long)BlockSize1 + BlockSize2];
+  int *pTempArray = new int[BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
-  while ((i1 < Index1 + BlockSize1) && (i2 < Index2 + BlockSize2)) {
+  while (i1 < Index1 + BlockSize1 && i2 < Index2 + BlockSize2) {
     if (arr[i1] < arr[i2])
       pTempArray[curr++] = arr[i1++];
-    else {
+    else
       pTempArray[curr++] = arr[i2++];
-    }
-    while (i1 < Index1 + BlockSize1) pTempArray[curr++] = arr[i1++];
-    while (i2 < Index2 + BlockSize2) pTempArray[curr++] = arr[i2++];
-    for (int i = 0; i < BlockSize1 + BlockSize2; i++) arr[Index1 + i] = pTempArray[i];
-    delete[] pTempArray;
   }
+  while (i1 < Index1 + BlockSize1) pTempArray[curr++] = arr[i1++];
+  while (i2 < Index2 + BlockSize2) pTempArray[curr++] = arr[i2++];
+  for (int i = 0; i < BlockSize1 + BlockSize2; i++) arr[Index1 + i] = pTempArray[i];
+  delete[] pTempArray;
 }
 
 bool KiselevTaskOMP::IsSorted() {
