@@ -68,14 +68,14 @@ bool KiselevTaskOMP::run() {
     }
     int distance = ThreadNum / 2;
     while (!IsSorted() && distance > 0) {
-#pragma omp parallel
+      int i = 0;
+      while (i < 2 * ThreadNum - distance)
       {
-        int ThreadID = omp_get_thread_num();
-        int FirstBlock = ThreadID;
-        int SecondBlock = ThreadID + distance;
+        int FirstBlock = i;
+        int SecondBlock = i + distance;
         MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
-        distance /= 2;
       }
+      distance /= 2;
     }
     delete[] Index;
     delete[] BlockSize;
