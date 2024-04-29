@@ -58,7 +58,7 @@ bool KiselevTaskOMP::run() {
       BlockID = ThreadID + ThreadNum;
       SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
     }
-    
+
 #pragma omp parallel
     {
       int ThreadID = omp_get_thread_num();
@@ -105,8 +105,8 @@ bool KiselevTaskOMP::post_processing() {
 void KiselevTaskOMP::MergeBlocks(int Index1, int BlockSize1, int Index2, int BlockSize2) {
   int *pTempArray = new int[(unsigned long)BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
-  while ((i1 < Index1 + BlockSize1) || (i2 < Index2 + BlockSize2)) {
-    if (((i1 < Index1 + BlockSize1) && (arr[i1] < arr[i2])) || (i2 >= Index2 + BlockSize2))
+  while ((i1 < Index1 + BlockSize1) && (i2 < Index2 + BlockSize2)) {
+    if (arr[i1] < arr[i2])
       pTempArray[curr++] = arr[i1++];
     else {
       pTempArray[curr++] = arr[i2++];
