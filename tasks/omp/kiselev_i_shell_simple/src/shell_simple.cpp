@@ -72,7 +72,7 @@ bool KiselevTaskOMP::run() {
       {
         int ThreadID = omp_get_thread_num();
         int FirstBlock = ThreadID;
-        int SecondBlock = ThreadID + ThreadNum;
+        int SecondBlock = ThreadID + distance;
         MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
         distance /= 2;
       }
