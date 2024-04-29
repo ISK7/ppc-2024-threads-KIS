@@ -74,6 +74,7 @@ bool KiselevTaskOMP::run() {
         int FirstBlock = i;
         int SecondBlock = i + distance;
         MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
+        i++;
       }
       distance /= 2;
     }
