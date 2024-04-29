@@ -42,11 +42,13 @@ bool KiselevTaskOMP::run() {
     //  if (ThreadNum == 0) return false;
     int *Index = new int[ThreadNum + 1];
     int *BlockSize = new int[ThreadNum];
+    int *BlockIndices = new int[ThreadNum];
     for (int i = 0; i <= ThreadNum; i++) {
       Index[i] = (i * n) / ThreadNum;
     }
     for (int i = 0; i < ThreadNum; i++) {
       BlockSize[i] = Index[i + 1] - Index[i];
+      BlockIndices[i] = i;
     }
 #pragma omp parallel for
     for (int i = 0; i < ThreadNum; i++) {
@@ -55,13 +57,21 @@ bool KiselevTaskOMP::run() {
     for (int i = 1; i < ThreadNum; i *= 2) {
 #pragma omp parallel for
       for (int j = 0; j < ThreadNum; j += 2 * i) {
-        int left = j;
-        int right = std::min(j + i, ThreadNum - 1);
-        MergeBlocks(Index[left], BlockSize[left], Index[right], BlockSize[right]);
+        int left = BlockIndices[j];
+        int right = (j + i < ThreadNum) ? BlockIndices[j + i] : -1;
+        if (right != -1) {
+          MergeBlocks(Index[left], BlockSize[left], Index[right], BlockSize[right]);
+          BlockIndices[j / 2] = left;
+          BlockSize[j / 2] = BlockSize[left] + BlockSize[right];
+        } else {
+          BlockIndices[j / 2] = left;
+          BlockSize[j / 2] = BlockSize[left];
+        }
       }
     }
     delete[] Index;
     delete[] BlockSize;
+    delete[] BlockIndices;
     return true;
   } catch (...) {
     return false;
@@ -141,5 +151,6 @@ void KiselevTaskOMP::SeqSorter(int start, int end) {
         j -= step;
       }
     }
+    if (step == 0) break;
   }
 }
