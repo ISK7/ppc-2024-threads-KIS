@@ -131,7 +131,7 @@ void KiselevTaskOMP::FindThreadVariables() {
 
 void KiselevTaskOMP::SeqSorter(int start, int end) {
   int n = end - start;
-  for (int step = n / 2; step > 0; step /= 2) {
+  for (int step = n / 2; step >= 0; step /= 2) {
     for (int i = step; i < n; i += 1) {
       int j = i;
       while (j >= step && arr[j - step + start] > arr[i + start]) {
