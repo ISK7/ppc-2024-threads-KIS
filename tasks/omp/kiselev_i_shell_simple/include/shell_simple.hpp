@@ -24,8 +24,8 @@ class KiselevTaskOMP : public ppc::core::Task {
   bool IsSorted();
   int exp(int arg, int exp);
   void FindThreadVariables();
-  int GrayCode(int RingID, int DimSize);
-  int ReverseGrayCode(int CubeID, int DimSize);
+  //  int GrayCode(int RingID, int DimSize);
+  //  int ReverseGrayCode(int CubeID, int DimSize);
   void SetBlockPairs(int* BlockPairs, int Iter);
   int FindPair(int* BlockPairs, int ThreadID, int Iter);
   void MergeBlocks(int Index1, int BlockSize1, int Index2, int BlockSize2);
