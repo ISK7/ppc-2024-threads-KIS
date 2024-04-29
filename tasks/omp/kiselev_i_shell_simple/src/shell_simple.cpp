@@ -54,9 +54,9 @@ bool KiselevTaskOMP::run() {
     {
       int ThreadID = omp_get_thread_num();
       int BlockID = ThreadID;
-      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
+      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID]);
       BlockID = ThreadID + ThreadNum;
-      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
+      SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID]);
     }
 
 #pragma omp parallel
@@ -69,8 +69,7 @@ bool KiselevTaskOMP::run() {
     int distance = ThreadNum / 2;
     while (!IsSorted() && distance > 0) {
       int i = 0;
-      while (i < 2 * ThreadNum - distance)
-      {
+      while (i < 2 * ThreadNum - distance) {
         int FirstBlock = i;
         int SecondBlock = i + distance;
         MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
