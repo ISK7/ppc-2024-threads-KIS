@@ -66,16 +66,11 @@ bool KiselevTaskOMP::run() {
       int SecondBlock = ThreadID + ThreadNum;
       MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
     }
-    int distance = ThreadNum / 2;
-    while (!IsSorted() && distance > 0) {
-      int i = 0;
-      while (i < 2 * ThreadNum - distance) {
-        int FirstBlock = i;
-        int SecondBlock = i + distance;
-        MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
-        i++;
+    for (int i = 0; i < 2 * ThreadNum - 1; i++) {
+      for (int j = i + 1; j < 2 * ThreadNum; j++) {
+        MergeBlocks(Index[i], BlockSize[i], Index[j], BlockSize[j]);
+        if (IsSorted()) break;
       }
-      distance /= 2;
     }
     delete[] Index;
     delete[] BlockSize;
