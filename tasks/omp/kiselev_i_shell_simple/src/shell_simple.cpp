@@ -46,7 +46,7 @@ bool KiselevTaskOMP::run() {
     for (int i = 0; i < 2 * ThreadNum; i++) {
       Index[i] = int((i * n) / double(2 * ThreadNum));
       if (i < 2 * ThreadNum - 1)
-        BlockSize[i] = int(n / double(ThreadNum));
+        BlockSize[i] = int(n / (2 * double(ThreadNum)));
       else
         BlockSize[i] = n - Index[i];
     }
@@ -64,7 +64,7 @@ bool KiselevTaskOMP::run() {
         int MyPairNum = FindPair(BlockPairs, ThreadID, Iter);
         int FirstBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum], DimSize);
         int SecondBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum + 1], DimSize);
-        MergeBlocks(arr, Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
+        MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
       }
     }
     int Iter = 1;
@@ -72,10 +72,10 @@ bool KiselevTaskOMP::run() {
 #pragma omp parallel
       {
         if (Iter % 2 == 0)
-          MergeBlocks(arr, Index[2 * ThreadID], BlockSize[2 * ThreadID], Index[2 * ThreadID + 1],
+          MergeBlocks(Index[2 * ThreadID], BlockSize[2 * ThreadID], Index[2 * ThreadID + 1],
                       BlockSize[2 * ThreadID + 1]);
         else if (ThreadID < ThreadNum - 1)
-          MergeBlocks(arr, Index[2 * ThreadID + 1], BlockSize[2 * ThreadID + 1], Index[2 * ThreadID + 2],
+          MergeBlocks(Index[2 * ThreadID + 1], BlockSize[2 * ThreadID + 1], Index[2 * ThreadID + 2],
                       BlockSize[2 * ThreadID + 2]);
       }
       Iter++;
@@ -105,18 +105,18 @@ bool KiselevTaskOMP::post_processing() {
   }
 }
 // Can do better
-void KiselevTaskOMP::MergeBlocks(::std::vector<int> pData, int Index1, int BlockSize1, int Index2, int BlockSize2) {
-  int *pTempArray = new int[BlockSize1 + BlockSize2];
+void KiselevTaskOMP::MergeBlocks(int Index1, int BlockSize1, int Index2, int BlockSize2) {
+  int *pTempArray = new int[(unsigned long)BlockSize1 + BlockSize2];
   int i1 = Index1, i2 = Index2, curr = 0;
   while ((i1 < Index1 + BlockSize1) || (i2 < Index2 + BlockSize2)) {
-    if (((i1 < Index1 + BlockSize1) && (pData[i1] < pData[i2])) || (i2 >= Index2 + BlockSize2))
-      pTempArray[curr++] = pData[i1++];
+    if (((i1 < Index1 + BlockSize1) && (arr[i1] < arr[i2])) || (i2 >= Index2 + BlockSize2))
+      pTempArray[curr++] = arr[i1++];
     else {
-      pTempArray[curr++] = pData[i2++];
+      pTempArray[curr++] = arr[i2++];
     }
-    while (i1 < Index1 + BlockSize1) pTempArray[curr++] = pData[i1++];
-    while (i2 < Index2 + BlockSize2) pTempArray[curr++] = pData[i2++];
-    for (int i = 0; i < BlockSize1 + BlockSize2; i++) pData[Index1 + i] = pTempArray[i];
+    while (i1 < Index1 + BlockSize1) pTempArray[curr++] = arr[i1++];
+    while (i2 < Index2 + BlockSize2) pTempArray[curr++] = arr[i2++];
+    for (int i = 0; i < BlockSize1 + BlockSize2; i++) arr[Index1 + i] = pTempArray[i];
     delete[] pTempArray;
   }
 }

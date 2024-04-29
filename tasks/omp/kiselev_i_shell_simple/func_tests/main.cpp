@@ -9,9 +9,9 @@
 using namespace Kiselev_omp;
 
 TEST(kiselev_i_shell_simple_omp, check_8_size) {
-  std::vector<int> arr = {5, 3, 8, 6, 2, 7, 1, 4};
+  std::vector<int> arr = {10, 5, 3, 8, 12, 6, 9, 2, 7, 1, 4, 11};
   std::vector<int> res(arr.size(), 0);
-  std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8};
+  std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
   std::shared_ptr<ppc::core::TaskData> taskDataOMP = std::make_shared<ppc::core::TaskData>();
   taskDataOMP->inputs.emplace_back(reinterpret_cast<uint8_t *>(arr.data()));

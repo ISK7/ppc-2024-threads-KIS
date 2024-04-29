@@ -28,7 +28,7 @@ class KiselevTaskOMP : public ppc::core::Task {
   int ReverseGrayCode(int CubeID, int DimSize);
   void SetBlockPairs(int* BlockPairs, int Iter);
   int FindPair(int* BlockPairs, int ThreadID, int Iter);
-  void MergeBlocks(std::vector<int> pData, int Index1, int BlockSize1, int Index2, int BlockSize2);
+  void MergeBlocks(int Index1, int BlockSize1, int Index2, int BlockSize2);
   void SeqSorter(int start, int end);
 };
 }  // namespace Kiselev_omp
