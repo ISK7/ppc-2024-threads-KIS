@@ -58,17 +58,25 @@ bool KiselevTaskOMP::run() {
       BlockID = ThreadID + ThreadNum;
       SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
     }
-    for (int Iter = 0; (Iter < DimSize) && (!IsSorted()); Iter++) {
-      SetBlockPairs(BlockPairs, Iter);
 #pragma omp parallel
-      {
-        int ThreadID = omp_get_thread_num();
-        int MyPairNum = FindPair(BlockPairs, ThreadID, Iter);
-        int FirstBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum], DimSize);
-        int SecondBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum + 1], DimSize);
-        MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
-      }
+    {
+      int ThreadID = omp_get_thread_num();
+      int FirstBlock = ThreadID;
+      int SecondBlock = ThreadID + ThreadNum;
+      MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
     }
+
+//    for (int Iter = 0; (Iter < DimSize) && (!IsSorted()); Iter++) {
+//      SetBlockPairs(BlockPairs, Iter);
+//  #pragma omp parallel
+//      {
+//        int ThreadID = omp_get_thread_num();
+//        int MyPairNum = FindPair(BlockPairs, ThreadID, Iter);
+//        int FirstBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum], DimSize);
+//        int SecondBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum + 1], DimSize);
+//        MergeBlocks(Index[FirstBlock], BlockSize[FirstBlock], Index[SecondBlock], BlockSize[SecondBlock]);
+//      }
+//    }
     int Iter = 1;
     while (!IsSorted() && Iter < 2 * DimSize) {
 #pragma omp parallel
@@ -154,23 +162,23 @@ void KiselevTaskOMP::FindThreadVariables() {
   }
 }
 
-int KiselevTaskOMP::GrayCode(int RingID, int _DimSize) {
-  if ((RingID == 0) && (_DimSize == 1)) return 0;
-  if ((RingID == 1) && (_DimSize == 1)) return 1;
-  int res;
-  if (RingID < (1 << (_DimSize - 1)))
-    res = GrayCode(RingID, _DimSize - 1);
-  else
-    res = (1 << (_DimSize - 1)) + GrayCode((1 << _DimSize) - 1 - RingID, _DimSize - 1);
-  return res;
-}
-
-int KiselevTaskOMP::ReverseGrayCode(int CubeID, int _DimSize) {
-  for (int i = 0; i < (1 << _DimSize); i++) {
-    if (CubeID == GrayCode(i, _DimSize)) return i;
-  }
-  return 0;
-}
+//   KiselevTaskOMP::GrayCode(int RingID, int _DimSize) {
+//  if ((RingID == 0) && (_DimSize == 1)) return 0;
+//  if ((RingID == 1) && (_DimSize == 1)) return 1;
+//  int res;
+//  if (RingID < (1 << (_DimSize - 1)))
+//    res = GrayCode(RingID, _DimSize - 1);
+//  else
+//    res = (1 << (_DimSize - 1)) + GrayCode((1 << _DimSize) - 1 - RingID, _DimSize - 1);
+//  return res;
+//  }
+//
+//  int KiselevTaskOMP::ReverseGrayCode(int CubeID, int _DimSize) {
+//  for (int i = 0; i < (1 << _DimSize); i++) {
+//    if (CubeID == GrayCode(i, _DimSize)) return i;
+//  }
+//  return 0;
+//  }
 
 void KiselevTaskOMP::SetBlockPairs(int *BlockPairs, int Iter) {
   int PairNum = 0, FirstValue, SecondValue;
