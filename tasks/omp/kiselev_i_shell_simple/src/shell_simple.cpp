@@ -52,6 +52,7 @@ bool KiselevTaskOMP::run() {
     }
 #pragma omp parallel
     {
+      int ThreadID = omp_get_thread_num();
       int BlockID = ReverseGrayCode(ThreadNum + ThreadID, DimSize);
       SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
       BlockID = ReverseGrayCode(ThreadID, DimSize);
@@ -61,6 +62,7 @@ bool KiselevTaskOMP::run() {
       SetBlockPairs(BlockPairs, Iter);
 #pragma omp parallel
       {
+        int ThreadID = omp_get_thread_num();
         int MyPairNum = FindPair(BlockPairs, ThreadID, Iter);
         int FirstBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum], DimSize);
         int SecondBlock = ReverseGrayCode(BlockPairs[2 * MyPairNum + 1], DimSize);
@@ -71,6 +73,7 @@ bool KiselevTaskOMP::run() {
     while (!IsSorted() && Iter < 2 * DimSize) {
 #pragma omp parallel
       {
+        int ThreadID = omp_get_thread_num();
         if (Iter % 2 == 0)
           MergeBlocks(Index[2 * ThreadID], BlockSize[2 * ThreadID], Index[2 * ThreadID + 1],
                       BlockSize[2 * ThreadID + 1]);
@@ -140,7 +143,6 @@ int KiselevTaskOMP::exp(int arg, int exp) {
 void KiselevTaskOMP::FindThreadVariables() {
 #pragma omp parallel
   {
-    ThreadID = omp_get_thread_num();
 #pragma omp single
     ThreadNum = omp_get_num_threads();
   }

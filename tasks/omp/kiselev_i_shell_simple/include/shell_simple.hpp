@@ -20,7 +20,7 @@ class KiselevTaskOMP : public ppc::core::Task {
  private:
   std::vector<int> arr;
   std::vector<int> input_;
-  int ThreadNum, ThreadID, DimSize;
+  int ThreadNum, DimSize;
   bool IsSorted();
   int exp(int arg, int exp);
   void FindThreadVariables();
