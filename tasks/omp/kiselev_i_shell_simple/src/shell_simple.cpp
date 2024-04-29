@@ -53,9 +53,9 @@ bool KiselevTaskOMP::run() {
 #pragma omp parallel
     {
       int ThreadID = omp_get_thread_num();
-      int BlockID = ReverseGrayCode(ThreadNum + ThreadID, DimSize);
+      int BlockID = ThreadID;
       SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
-      BlockID = ReverseGrayCode(ThreadID, DimSize);
+      BlockID = ThreadID + ThreadNum;
       SeqSorter(Index[BlockID], Index[BlockID] + BlockSize[BlockID] - 1);
     }
     for (int Iter = 0; (Iter < DimSize) && (!IsSorted()); Iter++) {
