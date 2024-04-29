@@ -42,7 +42,6 @@ bool KiselevTaskOMP::run() {
     //  if (ThreadNum == 0) return false;
     int *Index = new int[(unsigned long)2 * ThreadNum];
     int *BlockSize = new int[(unsigned long)2 * ThreadNum];
-    int *BlockPairs = new int[(unsigned long)4 * ThreadNum + 1];
     for (int i = 0; i < 2 * ThreadNum; i++) {
       Index[i] = int((i * n) / double(2 * ThreadNum));
       if (i < 2 * ThreadNum - 1)
@@ -74,7 +73,6 @@ bool KiselevTaskOMP::run() {
     }
     delete[] Index;
     delete[] BlockSize;
-    delete[] BlockPairs;
     return true;
   } catch (...) {
     return false;
@@ -145,12 +143,15 @@ void KiselevTaskOMP::FindThreadVariables() {
 
 void KiselevTaskOMP::SeqSorter(int start, int end) {
   int n = end - start;
-  for (int gap = n / 2; gap > 0; gap /= 2) {
-    for (int i = gap; i < n; i += 1) {
-      int temp = arr[i + start];
-      int j;
-      for (j = i; j >= gap && arr[start + j - gap] > temp; j -= gap) arr[start + j] = arr[start + j - gap];
-      arr[start + j] = temp;
+  for (int step = n / 2; step > 0; step /= 2) {
+    for (int i = step; i < n; i += 1) {
+      int j = i;
+      while (j >= step && arr[j - step + start] > arr[i + start]) {
+        arr[j + start] += arr[j - step + start];
+        arr[j - step + start] = arr[j + start] - arr[j - step + start];
+        arr[j + start] = arr[j + start] - arr[j - step + start];
+        j -= step;
+      }
     }
   }
 }
