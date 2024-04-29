@@ -46,7 +46,7 @@ bool KiselevTaskOMP::run() {
     for (int i = 0; i < 2 * ThreadNum; i++) {
       Index[i] = int((i * n) / double(2 * ThreadNum));
       if (i < 2 * ThreadNum - 1)
-        BlockSize[i] = int((i + 1 * n) / double(2 * ThreadNum)) - Index[i];
+        BlockSize[i] = int(n / double(2 * ThreadNum));
       else
         BlockSize[i] = n - Index[i];
     }
