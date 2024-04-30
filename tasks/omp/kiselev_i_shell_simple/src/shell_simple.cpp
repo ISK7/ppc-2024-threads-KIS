@@ -95,30 +95,31 @@ bool KiselevTaskOMP::post_processing() {
 }
 // Can do better
 void KiselevTaskOMP::MergeBlocks(int Index1, int BlockSize1, int Index2, int BlockSize2) {
-  int *tempArr1 = new int[BlockSize1];
-  int *tempArr2 = new int[BlockSize2];
-
-  for (int i = 0; i < BlockSize1; i++) {
-    tempArr1[i] = arr[Index1 + i];
-  }
-  for (int i = 0; i < BlockSize2; i++) {
-    tempArr2[i] = arr[Index2 + i];
-  }
-
   int *pTempArray = new int[BlockSize1 + BlockSize2];
-  int i1 = 0, i2 = 0, curr = 0;
-  while (i1 < BlockSize1 && i2 < BlockSize2) {
-    if (tempArr1[i1] < tempArr2[i2])
-      pTempArray[curr++] = tempArr1[i1++];
-    else
-      pTempArray[curr++] = tempArr2[i2++];
+  int i1 = Index1, i2 = Index2, curr = 0;
+  if (BlockSize1 == 0) {
+    for (int i = 0; i < BlockSize2; i++) {
+      pTempArray[curr++] = arr[i2++];
+    }
+    for (int i = 0; i < BlockSize1 + BlockSize2; i++) arr[Index1 + i] = pTempArray[i];
+    return;
   }
-  while (i1 < BlockSize1) pTempArray[curr++] = tempArr1[i1++];
-  while (i2 < BlockSize2) pTempArray[curr++] = tempArr2[i2++];
+  if (BlockSize2 == 0) {
+    for (int i = 0; i < BlockSize1; i++) {
+      pTempArray[curr++] = arr[i1++];
+    }
+    for (int i = 0; i < BlockSize1 + BlockSize2; i++) arr[Index1 + i] = pTempArray[i];
+    return;
+  }
+  while (i1 < Index1 + BlockSize1 && i2 < Index2 + BlockSize2) {
+    if (arr[i1] < arr[i2])
+      pTempArray[curr++] = arr[i1++];
+    else
+      pTempArray[curr++] = arr[i2++];
+  }
+  while (i1 < Index1 + BlockSize1) pTempArray[curr++] = arr[i1++];
+  while (i2 < Index2 + BlockSize2) pTempArray[curr++] = arr[i2++];
   for (int i = 0; i < BlockSize1 + BlockSize2; i++) arr[Index1 + i] = pTempArray[i];
-
-  delete[] tempArr1;
-  delete[] tempArr2;
   delete[] pTempArray;
 }
 
@@ -154,16 +155,13 @@ void KiselevTaskOMP::FindThreadVariables() {
 
 void KiselevTaskOMP::SeqSorter(int start, int end) {
   int n = end - start;
-  for (int step = n / 2; step >= 0; step /= 2) {
-    for (int i = step; i < n; i += 1) {
-      int j = i;
-      while (j >= step && arr[j - step + start] > arr[i + start]) {
-        arr[j + start] += arr[j - step + start];
-        arr[j - step + start] = arr[j + start] - arr[j - step + start];
-        arr[j + start] = arr[j + start] - arr[j - step + start];
-        j -= step;
-      }
+  for (int i = 1; i < n; i++) {
+    int j = i - 1;
+    while (j >= 0 && arr[j] > arr[j + 1]) {
+        arr[j + start] += arr[j + 1 + start];
+        arr[j + 1 + start] = arr[j + start] - arr[j + 1 + start];
+        arr[j + start] = arr[j + start] - arr[j + 1 + start];
+        j--;
     }
-    if (step == 0) break;
   }
 }
