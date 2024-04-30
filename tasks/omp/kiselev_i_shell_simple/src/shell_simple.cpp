@@ -157,11 +157,11 @@ void KiselevTaskOMP::SeqSorter(int start, int end) {
   int n = end - start;
   for (int i = 1; i < n; i++) {
     int j = i - 1;
-    while (j >= 0 && arr[j] > arr[j + 1]) {
-        arr[j + start] += arr[j + 1 + start];
-        arr[j + 1 + start] = arr[j + start] - arr[j + 1 + start];
-        arr[j + start] = arr[j + start] - arr[j + 1 + start];
-        j--;
+    while (j >= 0 && arr[j + start] > arr[j + 1 + start]) {
+      arr[j + start] += arr[j + 1 + start];
+      arr[j + 1 + start] = arr[j + start] - arr[j + 1 + start];
+      arr[j + start] = arr[j + start] - arr[j + 1 + start];
+      j--;
     }
   }
 }
