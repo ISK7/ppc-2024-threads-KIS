@@ -62,7 +62,7 @@ bool KiselevTaskOMP::run() {
         if (right != -1) {
           MergeBlocks(Index[left], BlockSize[left], Index[right], BlockSize[right]);
           BlockIndices[j / 2] = left;
-          BlockSize[j / 2] = BlockSize[left] + BlockSize[right];
+          BlockSize[j / 2] = BlockSize[left];
         } else {
           BlockIndices[j / 2] = left;
           BlockSize[j / 2] = BlockSize[left];
