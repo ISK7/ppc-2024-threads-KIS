@@ -61,11 +61,11 @@ bool KiselevTaskOMP::run() {
         int right = (j + i < ThreadNum) ? BlockIndices[j + i] : -1;
         if (right != -1) {
           MergeBlocks(Index[left], BlockSize[left], Index[right], BlockSize[right]);
-          BlockIndices[j / 2] = left;
-          BlockSize[j / 2] = BlockSize[left];
+          BlockIndices[j] = left;
+          BlockSize[j] = BlockSize[left] + BlockSize[right];
         } else {
-          BlockIndices[j / 2] = left;
-          BlockSize[j / 2] = BlockSize[left];
+          BlockIndices[j] = left;
+          BlockSize[j] = BlockSize[left];
         }
       }
     }
