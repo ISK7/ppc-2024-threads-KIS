@@ -4,9 +4,9 @@
 #include <numeric>
 #include <vector>
 
-#include "seq/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs.hpp"
+#include "tbb/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs_tbb.hpp"
 
-TEST(Safarov_N_SparseMatMultCRS, TestOne) {
+TEST(Safarov_N_SparseMatMultCRS_TBB, TestOne) {
   // Create data
   SparseMatrixCRS x(6, 6, {1, 2, 3, 4, 2, 5, 7}, {0, 4, 2, 3, 3, 5, 1}, {0, 2, 4, 4, 6, 6, 7});
   SparseMatrixCRS y(6, 6, {3, 1, 1, 3, 1, 3, 2, 4}, {0, 5, 2, 3, 0, 2, 1, 4}, {0, 2, 3, 3, 4, 6, 8});
@@ -14,17 +14,17 @@ TEST(Safarov_N_SparseMatMultCRS, TestOne) {
   SparseMatrixCRS z;
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
+  std::shared_ptr<ppc::core::TaskData> taskDataTbb = std::make_shared<ppc::core::TaskData>();
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
+  taskDataTbb->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
 
   // Create Task
-  SparseMatrixMultiplicationCRS taskSequential(taskDataSeq);
-  ASSERT_EQ(taskSequential.validation(), true);
-  ASSERT_EQ(taskSequential.pre_processing(), true);
-  ASSERT_EQ(taskSequential.run(), true);
-  ASSERT_EQ(taskSequential.post_processing(), true);
+  SparseMatrixMultiplicationCRS_TBB taskTbb(taskDataTbb);
+  ASSERT_EQ(taskTbb.validation(), true);
+  ASSERT_EQ(taskTbb.pre_processing(), true);
+  ASSERT_EQ(taskTbb.run(), true);
+  ASSERT_EQ(taskTbb.post_processing(), true);
 
   ASSERT_EQ(z.numberOfRows, correctAnswer.numberOfRows);
   ASSERT_EQ(z.numberOfColumns, correctAnswer.numberOfColumns);
@@ -37,7 +37,7 @@ TEST(Safarov_N_SparseMatMultCRS, TestOne) {
   }
 }
 
-TEST(Safarov_N_SparseMatMultCRS, TestTwo) {
+TEST(Safarov_N_SparseMatMultCRS_TBB, TestTwo) {
   // Create data
   std::vector<std::vector<double>> temporaryX = createRandomMatrix(3, 3, 0.4);
   std::vector<std::vector<double>> temporaryY = createRandomMatrix(3, 3, 0.4);
@@ -48,17 +48,17 @@ TEST(Safarov_N_SparseMatMultCRS, TestTwo) {
   SparseMatrixCRS z;
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
+  std::shared_ptr<ppc::core::TaskData> taskDataTbb = std::make_shared<ppc::core::TaskData>();
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
+  taskDataTbb->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
 
   // Create Task
-  SparseMatrixMultiplicationCRS taskSequential(taskDataSeq);
-  ASSERT_EQ(taskSequential.validation(), true);
-  ASSERT_EQ(taskSequential.pre_processing(), true);
-  ASSERT_EQ(taskSequential.run(), true);
-  ASSERT_EQ(taskSequential.post_processing(), true);
+  SparseMatrixMultiplicationCRS_TBB taskTbb(taskDataTbb);
+  ASSERT_EQ(taskTbb.validation(), true);
+  ASSERT_EQ(taskTbb.pre_processing(), true);
+  ASSERT_EQ(taskTbb.run(), true);
+  ASSERT_EQ(taskTbb.post_processing(), true);
 
   ASSERT_EQ(z.numberOfRows, temporaryMatrix.numberOfRows);
   ASSERT_EQ(z.numberOfColumns, temporaryMatrix.numberOfColumns);
@@ -71,7 +71,7 @@ TEST(Safarov_N_SparseMatMultCRS, TestTwo) {
   }
 }
 
-TEST(Safarov_N_SparseMatMultCRS, TestThree) {
+TEST(Safarov_N_SparseMatMultCRS_TBB, TestThree) {
   // Create data
   SparseMatrixCRS x;
   x.numberOfRows = 5;
@@ -90,17 +90,17 @@ TEST(Safarov_N_SparseMatMultCRS, TestThree) {
   SparseMatrixCRS oldX;
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&identityMatrix));
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(&oldX));
+  std::shared_ptr<ppc::core::TaskData> taskDataTbb = std::make_shared<ppc::core::TaskData>();
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&identityMatrix));
+  taskDataTbb->outputs.emplace_back(reinterpret_cast<uint8_t *>(&oldX));
 
   // Create Task
-  SparseMatrixMultiplicationCRS taskSequential(taskDataSeq);
-  ASSERT_EQ(taskSequential.validation(), true);
-  ASSERT_EQ(taskSequential.pre_processing(), true);
-  ASSERT_EQ(taskSequential.run(), true);
-  ASSERT_EQ(taskSequential.post_processing(), true);
+  SparseMatrixMultiplicationCRS_TBB taskTbb(taskDataTbb);
+  ASSERT_EQ(taskTbb.validation(), true);
+  ASSERT_EQ(taskTbb.pre_processing(), true);
+  ASSERT_EQ(taskTbb.run(), true);
+  ASSERT_EQ(taskTbb.post_processing(), true);
 
   SparseMatrixCRS correctAnswer;
   correctAnswer.numberOfRows = 5;
@@ -120,7 +120,7 @@ TEST(Safarov_N_SparseMatMultCRS, TestThree) {
   }
 }
 
-TEST(Safarov_N_SparseMatMultCRS, TestFour) {
+TEST(Safarov_N_SparseMatMultCRS_TBB, TestFour) {
   // Create data
   SparseMatrixCRS x;
   x.numberOfRows = 4;
@@ -138,17 +138,17 @@ TEST(Safarov_N_SparseMatMultCRS, TestFour) {
   SparseMatrixCRS z;
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
+  std::shared_ptr<ppc::core::TaskData> taskDataTbb = std::make_shared<ppc::core::TaskData>();
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
+  taskDataTbb->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
 
   // Create Task
-  SparseMatrixMultiplicationCRS taskSequential(taskDataSeq);
-  ASSERT_EQ(taskSequential.validation(), true);
-  ASSERT_EQ(taskSequential.pre_processing(), true);
-  ASSERT_EQ(taskSequential.run(), true);
-  ASSERT_EQ(taskSequential.post_processing(), true);
+  SparseMatrixMultiplicationCRS_TBB taskTbb(taskDataTbb);
+  ASSERT_EQ(taskTbb.validation(), true);
+  ASSERT_EQ(taskTbb.pre_processing(), true);
+  ASSERT_EQ(taskTbb.run(), true);
+  ASSERT_EQ(taskTbb.post_processing(), true);
 
   SparseMatrixCRS correctAnswer;
   correctAnswer.numberOfRows = 4;
@@ -169,7 +169,7 @@ TEST(Safarov_N_SparseMatMultCRS, TestFour) {
   }
 }
 
-TEST(Safarov_N_SparseMatMultCRS, TestFive) {
+TEST(Safarov_N_SparseMatMultCRS_TBB, TestFive) {
   // Create data
   SparseMatrixCRS x;
   x.numberOfRows = 3;
@@ -187,17 +187,17 @@ TEST(Safarov_N_SparseMatMultCRS, TestFive) {
   SparseMatrixCRS z;
 
   // Create TaskData
-  std::shared_ptr<ppc::core::TaskData> taskDataSeq = std::make_shared<ppc::core::TaskData>();
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
-  taskDataSeq->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
-  taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
+  std::shared_ptr<ppc::core::TaskData> taskDataTbb = std::make_shared<ppc::core::TaskData>();
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&x));
+  taskDataTbb->inputs.emplace_back(reinterpret_cast<uint8_t *>(&y));
+  taskDataTbb->outputs.emplace_back(reinterpret_cast<uint8_t *>(&z));
 
   // Create Task
-  SparseMatrixMultiplicationCRS taskSequential(taskDataSeq);
-  ASSERT_EQ(taskSequential.validation(), true);
-  ASSERT_EQ(taskSequential.pre_processing(), true);
-  ASSERT_EQ(taskSequential.run(), true);
-  ASSERT_EQ(taskSequential.post_processing(), true);
+  SparseMatrixMultiplicationCRS_TBB taskTbb(taskDataTbb);
+  ASSERT_EQ(taskTbb.validation(), true);
+  ASSERT_EQ(taskTbb.pre_processing(), true);
+  ASSERT_EQ(taskTbb.run(), true);
+  ASSERT_EQ(taskTbb.post_processing(), true);
 
   SparseMatrixCRS correctAnswer;
   correctAnswer.numberOfRows = 3;

@@ -1,8 +1,8 @@
 // Copyright 2024 Safarov Nurlan
 #pragma once
 
-#ifndef TASKS_SEQ_SAFAROV_N_SPARSE_MATMULT_CRS_INCLUDE_SPARSE_MATMULT_CRS_HPP_
-#define TASKS_SEQ_SAFAROV_N_SPARSE_MATMULT_CRS_INCLUDE_SPARSE_MATMULT_CRS_HPP_
+#ifndef TASKS_OMP_SAFAROV_N_SPARSE_MATMULT_CRS_INCLUDE_SPARSE_MATMULT_CRS_OMP_HPP_
+#define TASKS_OMP_SAFAROV_N_SPARSE_MATMULT_CRS_INCLUDE_SPARSE_MATMULT_CRS_OMP_HPP_
 
 #include <algorithm>
 #include <cmath>
@@ -35,9 +35,10 @@ std::vector<std::vector<double>> createRandomMatrix(int columns, int rows, doubl
 std::vector<std::vector<double>> multiplyMatrices(std::vector<std::vector<double>> A,
                                                   std::vector<std::vector<double>> B);
 
-class SparseMatrixMultiplicationCRS : public ppc::core::Task {
+class SparseMatrixMultiplicationCRS_OMP : public ppc::core::Task {
  public:
-  explicit SparseMatrixMultiplicationCRS(std::shared_ptr<ppc::core::TaskData> taskData_) : Task(std::move(taskData_)) {}
+  explicit SparseMatrixMultiplicationCRS_OMP(std::shared_ptr<ppc::core::TaskData> taskData_)
+      : Task(std::move(taskData_)) {}
   bool validation() override;
   bool pre_processing() override;
   bool run() override;
@@ -47,4 +48,4 @@ class SparseMatrixMultiplicationCRS : public ppc::core::Task {
   SparseMatrixCRS *X{}, *Y{}, *Z{};
 };
 
-#endif  // TASKS_SEQ_SAFAROV_N_SPARSE_MATMULT_CRS_INCLUDE_SPARSE_MATMULT_CRS_HPP_
+#endif  // TASKS_OMP_SAFAROV_N_SPARSE_MATMULT_CRS_INCLUDE_SPARSE_MATMULT_CRS_OMP_HPP_

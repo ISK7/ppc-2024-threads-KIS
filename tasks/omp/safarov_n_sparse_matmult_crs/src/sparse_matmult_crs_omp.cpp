@@ -1,5 +1,7 @@
 // Copyright 2024 Safarov Nurlan
-#include "seq/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs.hpp"
+#include "omp/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs_omp.hpp"
+
+#include <omp.h>
 
 #include <algorithm>
 #include <cmath>
@@ -144,7 +146,7 @@ bool verifyCRSAttributes(const SparseMatrixCRS& object) {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::validation() {
+bool SparseMatrixMultiplicationCRS_OMP::validation() {
   internal_order_test();
 
   X = reinterpret_cast<SparseMatrixCRS*>(taskData->inputs[0]);
@@ -175,7 +177,7 @@ bool SparseMatrixMultiplicationCRS::validation() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::pre_processing() {
+bool SparseMatrixMultiplicationCRS_OMP::pre_processing() {
   internal_order_test();
 
   X = reinterpret_cast<SparseMatrixCRS*>(taskData->inputs[0]);
@@ -186,7 +188,7 @@ bool SparseMatrixMultiplicationCRS::pre_processing() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::run() {
+bool SparseMatrixMultiplicationCRS_OMP::run() {
   internal_order_test();
 
   std::vector<int> finalColumnIndexes;
@@ -198,6 +200,8 @@ bool SparseMatrixMultiplicationCRS::run() {
 
   int resultColumnIndexes = Y->numberOfRows;  // After transposing matrix Y
 
+  omp_set_num_threads(4);
+#pragma omp parallel for
   for (int rOne = 0; rOne < X->numberOfRows; rOne++) {
     for (int rTwo = 0; rTwo < Y->numberOfRows; rTwo++) {
       int firstCurrentPointer = X->pointers[rOne];
@@ -245,7 +249,7 @@ bool SparseMatrixMultiplicationCRS::run() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::post_processing() {
+bool SparseMatrixMultiplicationCRS_OMP::post_processing() {
   internal_order_test();
 
   return true;

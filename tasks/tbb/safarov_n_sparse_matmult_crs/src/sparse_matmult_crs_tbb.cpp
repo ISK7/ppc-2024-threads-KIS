@@ -1,5 +1,7 @@
 // Copyright 2024 Safarov Nurlan
-#include "seq/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs.hpp"
+#include "tbb/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs_tbb.hpp"
+
+#include <tbb/tbb.h>
 
 #include <algorithm>
 #include <cmath>
@@ -144,7 +146,7 @@ bool verifyCRSAttributes(const SparseMatrixCRS& object) {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::validation() {
+bool SparseMatrixMultiplicationCRS_TBB::validation() {
   internal_order_test();
 
   X = reinterpret_cast<SparseMatrixCRS*>(taskData->inputs[0]);
@@ -175,7 +177,7 @@ bool SparseMatrixMultiplicationCRS::validation() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::pre_processing() {
+bool SparseMatrixMultiplicationCRS_TBB::pre_processing() {
   internal_order_test();
 
   X = reinterpret_cast<SparseMatrixCRS*>(taskData->inputs[0]);
@@ -186,7 +188,7 @@ bool SparseMatrixMultiplicationCRS::pre_processing() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::run() {
+bool SparseMatrixMultiplicationCRS_TBB::run() {
   internal_order_test();
 
   std::vector<int> finalColumnIndexes;
@@ -198,38 +200,42 @@ bool SparseMatrixMultiplicationCRS::run() {
 
   int resultColumnIndexes = Y->numberOfRows;  // After transposing matrix Y
 
-  for (int rOne = 0; rOne < X->numberOfRows; rOne++) {
-    for (int rTwo = 0; rTwo < Y->numberOfRows; rTwo++) {
-      int firstCurrentPointer = X->pointers[rOne];
-      int secondCurrentPointer = Y->pointers[rTwo];
-      int firstEndPointer = X->pointers[rOne + 1] - 1;
-      int secondEndPointer = Y->pointers[rTwo + 1] - 1;
-      double v = 0;
+  int sizePart = 10;
+  tbb::parallel_for(tbb::blocked_range<int>(0, X->numberOfRows, sizePart), [&](tbb::blocked_range<int> r) {
+    for (int rOne = r.begin(); rOne != r.end(); ++rOne) {
+      for (int rTwo = 0; rTwo < Y->numberOfRows; rTwo++) {
+        int firstCurrentPointer = X->pointers[rOne];
+        int secondCurrentPointer = Y->pointers[rTwo];
+        int firstEndPointer = X->pointers[rOne + 1] - 1;
+        int secondEndPointer = Y->pointers[rTwo + 1] - 1;
+        double v = 0;
 
-      while ((secondCurrentPointer <= secondEndPointer) && (firstCurrentPointer <= firstEndPointer)) {
-        if (X->columnIndexes[firstCurrentPointer] <= Y->columnIndexes[secondCurrentPointer]) {
-          if (X->columnIndexes[firstCurrentPointer] == Y->columnIndexes[secondCurrentPointer]) {
-            v = v + (X->values[firstCurrentPointer]) * (Y->values[secondCurrentPointer]);
-            secondCurrentPointer++;
-            firstCurrentPointer++;
+        while ((secondCurrentPointer <= secondEndPointer) && (firstCurrentPointer <= firstEndPointer)) {
+          if (X->columnIndexes[firstCurrentPointer] <= Y->columnIndexes[secondCurrentPointer]) {
+            if (X->columnIndexes[firstCurrentPointer] == Y->columnIndexes[secondCurrentPointer]) {
+              v += (X->values[firstCurrentPointer]) * (Y->values[secondCurrentPointer]);
+              secondCurrentPointer++;
+              firstCurrentPointer++;
+            } else {
+              firstCurrentPointer++;
+            }
           } else {
-            firstCurrentPointer++;
+            secondCurrentPointer++;
           }
-        } else {
-          secondCurrentPointer++;
+        }
+        if (v != 0) {
+          localValues[rOne].push_back(v);
+          localColumnIndexes[rOne].push_back(rTwo);
         }
       }
-      if (v != 0) {
-        localValues[rOne].push_back(v);
-        localColumnIndexes[rOne].push_back(rTwo);
-      }
     }
-  }
+  });
+
   int elementCounter = 0;
   finalPointers.push_back(elementCounter);
 
   for (int indRow = 0; indRow < X->numberOfRows; indRow++) {
-    elementCounter = elementCounter + localColumnIndexes[indRow].size();
+    elementCounter += localColumnIndexes[indRow].size();
     finalColumnIndexes.insert(finalColumnIndexes.end(), localColumnIndexes[indRow].begin(),
                               localColumnIndexes[indRow].end());
     finalValues.insert(finalValues.end(), localValues[indRow].begin(), localValues[indRow].end());
@@ -245,7 +251,7 @@ bool SparseMatrixMultiplicationCRS::run() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::post_processing() {
+bool SparseMatrixMultiplicationCRS_TBB::post_processing() {
   internal_order_test();
 
   return true;

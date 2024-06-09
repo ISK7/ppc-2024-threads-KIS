@@ -1,8 +1,9 @@
 // Copyright 2024 Safarov Nurlan
-#include "seq/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs.hpp"
+#include "stl/safarov_n_sparse_matmult_crs/include/sparse_matmult_crs_stl.hpp"
 
 #include <algorithm>
 #include <cmath>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -144,7 +145,7 @@ bool verifyCRSAttributes(const SparseMatrixCRS& object) {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::validation() {
+bool SparseMatrixMultiplicationCRS_STL::validation() {
   internal_order_test();
 
   X = reinterpret_cast<SparseMatrixCRS*>(taskData->inputs[0]);
@@ -175,7 +176,7 @@ bool SparseMatrixMultiplicationCRS::validation() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::pre_processing() {
+bool SparseMatrixMultiplicationCRS_STL::pre_processing() {
   internal_order_test();
 
   X = reinterpret_cast<SparseMatrixCRS*>(taskData->inputs[0]);
@@ -186,7 +187,7 @@ bool SparseMatrixMultiplicationCRS::pre_processing() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::run() {
+bool SparseMatrixMultiplicationCRS_STL::run() {
   internal_order_test();
 
   std::vector<int> finalColumnIndexes;
@@ -198,33 +199,45 @@ bool SparseMatrixMultiplicationCRS::run() {
 
   int resultColumnIndexes = Y->numberOfRows;  // After transposing matrix Y
 
-  for (int rOne = 0; rOne < X->numberOfRows; rOne++) {
-    for (int rTwo = 0; rTwo < Y->numberOfRows; rTwo++) {
-      int firstCurrentPointer = X->pointers[rOne];
-      int secondCurrentPointer = Y->pointers[rTwo];
-      int firstEndPointer = X->pointers[rOne + 1] - 1;
-      int secondEndPointer = Y->pointers[rTwo + 1] - 1;
-      double v = 0;
+  const int num_threads = 4;
+  std::vector<std::thread> threads(num_threads);
 
-      while ((secondCurrentPointer <= secondEndPointer) && (firstCurrentPointer <= firstEndPointer)) {
-        if (X->columnIndexes[firstCurrentPointer] <= Y->columnIndexes[secondCurrentPointer]) {
-          if (X->columnIndexes[firstCurrentPointer] == Y->columnIndexes[secondCurrentPointer]) {
-            v = v + (X->values[firstCurrentPointer]) * (Y->values[secondCurrentPointer]);
-            secondCurrentPointer++;
-            firstCurrentPointer++;
-          } else {
-            firstCurrentPointer++;
+  for (int i = 0; i < num_threads; ++i) {
+    threads[i] = std::thread([&, i]() {
+      for (int rOne = i; rOne < X->numberOfRows; rOne += num_threads) {
+        for (int rTwo = 0; rTwo < Y->numberOfRows; rTwo++) {
+          int firstCurrentPointer = X->pointers[rOne];
+          int secondCurrentPointer = Y->pointers[rTwo];
+          int firstEndPointer = X->pointers[rOne + 1] - 1;
+          int secondEndPointer = Y->pointers[rTwo + 1] - 1;
+          double v = 0;
+
+          while ((secondCurrentPointer <= secondEndPointer) && (firstCurrentPointer <= firstEndPointer)) {
+            if (X->columnIndexes[firstCurrentPointer] <= Y->columnIndexes[secondCurrentPointer]) {
+              if (X->columnIndexes[firstCurrentPointer] == Y->columnIndexes[secondCurrentPointer]) {
+                v += X->values[firstCurrentPointer] * Y->values[secondCurrentPointer];
+                secondCurrentPointer++;
+                firstCurrentPointer++;
+              } else {
+                firstCurrentPointer++;
+              }
+            } else {
+              secondCurrentPointer++;
+            }
           }
-        } else {
-          secondCurrentPointer++;
+          if (v != 0) {
+            localValues[rOne].push_back(v);
+            localColumnIndexes[rOne].push_back(rTwo);
+          }
         }
       }
-      if (v != 0) {
-        localValues[rOne].push_back(v);
-        localColumnIndexes[rOne].push_back(rTwo);
-      }
-    }
+    });
   }
+
+  for (auto& thread : threads) {
+    thread.join();
+  }
+
   int elementCounter = 0;
   finalPointers.push_back(elementCounter);
 
@@ -245,7 +258,7 @@ bool SparseMatrixMultiplicationCRS::run() {
   return true;
 }
 
-bool SparseMatrixMultiplicationCRS::post_processing() {
+bool SparseMatrixMultiplicationCRS_STL::post_processing() {
   internal_order_test();
 
   return true;
