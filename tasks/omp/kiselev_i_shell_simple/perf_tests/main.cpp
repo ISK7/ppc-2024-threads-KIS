@@ -72,7 +72,7 @@ TEST(kiselev_i_shell_simple_omp, test_task_run) {
 
   // Create Perf attributes
   auto perfAttr = std::make_shared<ppc::core::PerfAttr>();
-  perfAttr->num_running = 20;
+  perfAttr->num_running = 100;
   perfAttr->current_timer = [&] { return omp_get_wtime(); };
 
   // Create and init perf results
