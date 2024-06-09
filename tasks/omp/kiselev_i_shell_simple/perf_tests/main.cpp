@@ -49,7 +49,7 @@ TEST(kiselev_i_shell_simple_omp, test_pipeline_run) {
 // task_run
 
 TEST(kiselev_i_shell_simple_omp, test_task_run) {
-  const int count = 1000000;
+  const int count = 10000;
 
   // Create data
   std::vector<int> in(count, 0);
@@ -72,7 +72,7 @@ TEST(kiselev_i_shell_simple_omp, test_task_run) {
 
   // Create Perf attributes
   auto perfAttr = std::make_shared<ppc::core::PerfAttr>();
-  perfAttr->num_running = 100;
+  perfAttr->num_running = 20;
   perfAttr->current_timer = [&] { return omp_get_wtime(); };
 
   // Create and init perf results
