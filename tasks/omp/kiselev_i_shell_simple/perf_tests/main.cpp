@@ -10,7 +10,7 @@
 using namespace Kiselev_omp;
 
 TEST(kiselev_i_shell_simple_omp, test_pipeline_run) {
-  const int count = 10000;
+  const int count = 100000;
 
   // Create data
   std::vector<int> in(count, 0);
@@ -49,7 +49,7 @@ TEST(kiselev_i_shell_simple_omp, test_pipeline_run) {
 // task_run
 
 TEST(kiselev_i_shell_simple_omp, test_task_run) {
-  const int count = 10000;
+  const int count = 100000;
 
   // Create data
   std::vector<int> in(count, 0);
