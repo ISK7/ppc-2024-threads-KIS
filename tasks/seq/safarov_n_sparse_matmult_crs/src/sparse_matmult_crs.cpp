@@ -6,30 +6,112 @@
 #include <utility>
 #include <vector>
 
+SparseMatrixCRS::SparseMatrixCRS(int _numberOfColumns, int _numberOfRows, const std::vector<double>& _values,
+                                 const std::vector<int>& _columnIndexes, const std::vector<int>& _pointers)
+    : numberOfColumns(_numberOfColumns),
+      numberOfRows(_numberOfRows),
+      values(_values),
+      columnIndexes(_columnIndexes),
+      pointers(_pointers) {}
+
+SparseMatrixCRS::SparseMatrixCRS(int _numberOfColumns, int _numberOfRows) {
+  numberOfColumns = _numberOfColumns;
+  numberOfRows = _numberOfRows;
+}
+
+SparseMatrixCRS::SparseMatrixCRS(std::vector<std::vector<double>> matrix) {
+  int indexCounter = 0;
+  numberOfRows = matrix.size();
+  numberOfColumns = matrix[0].size();
+  pointers.push_back(indexCounter);
+  for (int r = 0; r < numberOfRows; r++) {
+    for (int c = 0; c < numberOfColumns; c++) {
+      if (matrix[r][c] != 0) {
+        values.push_back(matrix[r][c]);
+        indexCounter++;
+        columnIndexes.push_back(c);
+      }
+    }
+    pointers.push_back(indexCounter);
+  }
+}
+
 SparseMatrixCRS sparseMatrixTransposeCRS(const SparseMatrixCRS& object) {
-  SparseMatrixCRS transportedObject;
-  transportedObject.numberOfColumns = object.numberOfRows;
-  transportedObject.numberOfRows = object.numberOfColumns;
+  SparseMatrixCRS matrix;
+  std::vector<std::vector<int>> locCVec(object.numberOfColumns);
+  std::vector<std::vector<double>> locVecVal(object.numberOfColumns);
+  matrix.numberOfColumns = object.numberOfRows;
+  int elementCounter = 0;
+  matrix.numberOfRows = object.numberOfColumns;
 
-  transportedObject.pointers.assign(transportedObject.numberOfRows + 1, 0);
-  std::vector<std::vector<std::pair<int, double>>> temp(transportedObject.numberOfRows);
-
-  for (int i = 0; i < object.numberOfRows; ++i) {
-    for (int j = object.pointers[i]; j < object.pointers[i + 1]; ++j) {
-      temp[object.columnIndexes[j]].emplace_back(i, object.values[j]);
+  for (int r = 0; r < object.numberOfRows; r++) {
+    for (int index = object.pointers[r]; index < object.pointers[r + 1]; index++) {
+      int cIndex = object.columnIndexes[index];
+      locCVec[cIndex].push_back(r);
+      locVecVal[cIndex].push_back(object.values[index]);
     }
   }
+  matrix.pointers.push_back(elementCounter);
+  for (int c = 0; c < object.numberOfColumns; c++) {
+    for (size_t ktmp = 0; ktmp < locCVec[c].size(); ktmp++) {
+      matrix.columnIndexes.push_back(locCVec[c][ktmp]);
+      matrix.values.push_back(locVecVal[c][ktmp]);
+    }
+    elementCounter += locCVec[c].size();
+    matrix.pointers.push_back(elementCounter);
+  }
+  return matrix;
+}
 
-  for (int i = 0; i < transportedObject.numberOfRows; ++i) {
-    transportedObject.pointers[i + 1] = transportedObject.pointers[i];
-    for (auto& t : temp[i]) {
-      transportedObject.columnIndexes.push_back(t.first);
-      transportedObject.values.push_back(t.second);
-      transportedObject.pointers[i + 1]++;
+bool SparseMatrixCRS::operator==(const SparseMatrixCRS& matrix) const {
+  return (values == matrix.values) && (numberOfColumns == matrix.numberOfColumns) &&
+         (columnIndexes == matrix.columnIndexes) && (numberOfRows == matrix.numberOfRows) &&
+         (pointers == matrix.pointers);
+}
+
+std::vector<std::vector<double>> fillTheMatrixWithZeros(int columns, int rows) {
+  std::vector<std::vector<double>> result(rows);
+  for (int m = 0; m < rows; m++) {
+    for (int n = 0; n < columns; n++) {
+      result[m].push_back(0);
     }
   }
+  return result;
+}
 
-  return transportedObject;
+std::vector<std::vector<double>> multiplyMatrices(std::vector<std::vector<double>> A,
+                                                  std::vector<std::vector<double>> B) {
+  int p = B[0].size();
+  int q = A.size();
+  std::vector<std::vector<double>> resultMatrix = fillTheMatrixWithZeros(p, q);
+  for (int rr = 0; rr < q; rr++) {
+    for (int cc = 0; cc < p; cc++) {
+      resultMatrix[rr][cc] = 0;
+      for (size_t k = 0; k < A[0].size(); k++) {
+        resultMatrix[rr][cc] += A[rr][k] * B[k][cc];
+      }
+    }
+  }
+  return resultMatrix;
+}
+
+std::vector<std::vector<double>> createRandomMatrix(int columns, int rows, double perc) {
+  if (perc < 0 || perc > 1) {
+    throw std::runtime_error("Wrong density. \n");
+  }
+  std::random_device mydev;
+  std::vector<std::vector<double>> result = fillTheMatrixWithZeros(columns, rows);
+  std::mt19937 gen(mydev());
+  std::uniform_real_distribution<double> genP{0.0, 1.0};
+  std::uniform_real_distribution<double> genVal{0.0, 25.0};
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < columns; c++) {
+      if (genP(gen) <= perc) {
+        result[r][c] = genVal(gen);
+      }
+    }
+  }
+  return result;
 }
 
 bool verifyCRSAttributes(const SparseMatrixCRS& object) {
@@ -86,7 +168,11 @@ bool SparseMatrixMultiplicationCRS::validation() {
     return false;
   }
 
-  return X->numberOfColumns == Y->numberOfRows;
+  if (X->numberOfColumns != Y->numberOfRows) {
+    return false;
+  }
+
+  return true;
 }
 
 bool SparseMatrixMultiplicationCRS::pre_processing() {
@@ -103,37 +189,58 @@ bool SparseMatrixMultiplicationCRS::pre_processing() {
 bool SparseMatrixMultiplicationCRS::run() {
   internal_order_test();
 
-  Z->numberOfRows = X->numberOfRows;
-  Z->numberOfColumns = X->numberOfRows;
+  std::vector<int> finalColumnIndexes;
+  std::vector<int> finalPointers;
+  std::vector<double> finalValues;
+  int resultRows = X->numberOfRows;
+  std::vector<std::vector<int>> localColumnIndexes(X->numberOfRows);
+  std::vector<std::vector<double>> localValues(X->numberOfRows);
 
-  Z->pointers.assign(Z->numberOfRows + 1, 0);
-  std::vector<std::vector<std::pair<int, double>>> temp(Z->numberOfRows);
+  int resultColumnIndexes = Y->numberOfRows;  // After transposing matrix Y
 
-  for (int i = 0; i < X->numberOfRows; ++i) {
-    for (int j = 0; j < Y->numberOfRows; ++j) {
+  for (int rOne = 0; rOne < X->numberOfRows; rOne++) {
+    for (int rTwo = 0; rTwo < Y->numberOfRows; rTwo++) {
+      int firstCurrentPointer = X->pointers[rOne];
+      int secondCurrentPointer = Y->pointers[rTwo];
+      int firstEndPointer = X->pointers[rOne + 1] - 1;
+      int secondEndPointer = Y->pointers[rTwo + 1] - 1;
       double v = 0;
 
-      for (int tX = X->pointers[i]; tX < X->pointers[i + 1]; ++tX) {
-        for (int tY = Y->pointers[j]; tY < Y->pointers[j + 1]; ++tY) {
-          if (X->columnIndexes[tX] == Y->columnIndexes[tY]) {
-            v += X->values[tX] * Y->values[tY];
+      while ((secondCurrentPointer <= secondEndPointer) && (firstCurrentPointer <= firstEndPointer)) {
+        if (X->columnIndexes[firstCurrentPointer] <= Y->columnIndexes[secondCurrentPointer]) {
+          if (X->columnIndexes[firstCurrentPointer] == Y->columnIndexes[secondCurrentPointer]) {
+            v = v + (X->values[firstCurrentPointer]) * (Y->values[secondCurrentPointer]);
+            secondCurrentPointer++;
+            firstCurrentPointer++;
+          } else {
+            firstCurrentPointer++;
           }
+        } else {
+          secondCurrentPointer++;
         }
       }
-      if (std::fabs(v) > 1e-6) {
-        temp[i].emplace_back(j, v);
+      if (v != 0) {
+        localValues[rOne].push_back(v);
+        localColumnIndexes[rOne].push_back(rTwo);
       }
     }
   }
+  int elementCounter = 0;
+  finalPointers.push_back(elementCounter);
 
-  for (int i = 0; i < Z->numberOfRows; ++i) {
-    Z->pointers[i + 1] = Z->pointers[i];
-    for (auto& t : temp[i]) {
-      Z->columnIndexes.push_back(t.first);
-      Z->values.push_back(t.second);
-      Z->pointers[i + 1]++;
-    }
+  for (int indRow = 0; indRow < X->numberOfRows; indRow++) {
+    elementCounter = elementCounter + localColumnIndexes[indRow].size();
+    finalColumnIndexes.insert(finalColumnIndexes.end(), localColumnIndexes[indRow].begin(),
+                              localColumnIndexes[indRow].end());
+    finalValues.insert(finalValues.end(), localValues[indRow].begin(), localValues[indRow].end());
+    finalPointers.push_back(elementCounter);
   }
+
+  Z->numberOfColumns = resultColumnIndexes;
+  Z->numberOfRows = resultRows;
+  Z->values = finalValues;
+  Z->columnIndexes = finalColumnIndexes;
+  Z->pointers = finalPointers;
 
   return true;
 }
