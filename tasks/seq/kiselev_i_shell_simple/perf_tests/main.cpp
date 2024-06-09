@@ -53,7 +53,7 @@ TEST(kiselev_i_shell_simple_seq, test_pipeline_run) {
 // task_run
 
 TEST(kiselev_i_shell_simple_seq, test_task_run) {
-  const int count = 1000000;
+  const int count = 10000000;
 
   // Create data
   std::vector<int> in(count, 0);
